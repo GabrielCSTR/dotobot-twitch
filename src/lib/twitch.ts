@@ -5,14 +5,9 @@ import Mongo from "./mongo";
 export class TwitchBot {
 	private client: Client;
 
-	constructor(client: any) {
+	constructor() {
 		this.client = new Client({
 			options: { debug: false, joinInterval: 300 },
-			logger: {
-				error: (msg: string) => {},
-				info: (msg: string) => {},
-				warn: (msg: string) => {},
-			},
 			connection: {
 				reconnect: true,
 				secure: true,
@@ -26,26 +21,11 @@ export class TwitchBot {
 
 	public async initialize(): Promise<void> {
 		try {
-			const options = {
-				path: "streams",
-				qs: { game_id: 29595, first: 100 },
-			};
+			const [channelsQuery] = await Promise.all([this.getChannelsQuery()]);
 
-			const [channelsQuery, streamIds] = await Promise.all([
-				this.getChannelsQuery(),
-				this.getStreamIds(options),
-			]);
+			const channels = this.getChannels(channelsQuery);
 
-			console.log("STREAMIDS", streamIds);
-			console.log("CHANNELQUERY", channelsQuery);
-
-			const liveStreamsToJoin = this.getLiveStreamsToJoin(
-				channelsQuery,
-				streamIds
-			);
-			const channels = this.getChannels(liveStreamsToJoin, channelsQuery);
-
-			channels.unshift("9kmmrbot");
+			channelsQuery.unshift("dotobot_");
 			console.log("CHANNELS CONNECTED", channels);
 
 			this.client.getOptions().channels = channels;
@@ -86,11 +66,8 @@ export class TwitchBot {
 			.map((channel) => channel.name);
 	}
 
-	private getChannels(
-		liveStreamsToJoin: string[],
-		channelsQuery: any[]
-	): string[] {
-		const channelsSet = new Set<string>(liveStreamsToJoin);
+	private getChannels(channelsQuery: any[]): string[] {
+		const channelsSet = new Set<string>();
 		channelsQuery.forEach((channel) => channelsSet.add(channel.name));
 		return Array.from(channelsSet.values());
 	}

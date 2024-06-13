@@ -5,10 +5,7 @@ import { TwitchBot } from "./lib/twitch";
 import Mongo from "./lib/mongo";
 import { ErrorsQuery } from "./types";
 
-// const twitch = Twitch.getInstance();
-// Exemplo de uso:
-const client = {}; // Aqui deve ser o cliente do Twitch configurado corretamente
-const twitchBot = new TwitchBot(client);
+const twitchBot = new TwitchBot();
 twitchBot.initialize();
 const mongo = Mongo.getInstance();
 
