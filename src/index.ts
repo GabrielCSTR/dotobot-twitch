@@ -1,13 +1,12 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { TwitchBot } from "./lib/twitch";
 import Mongo from "./lib/mongo";
 import { ErrorsQuery } from "./types";
+import TwitchBot from "./lib/twitch";
 
-const twitchBot = new TwitchBot();
-twitchBot.initialize();
 const mongo = Mongo.getInstance();
+const twitchBot = TwitchBot.getInstance();
 
 process.on("uncaughtException", async (err) => {
 	const db = await mongo.db;
@@ -24,9 +23,5 @@ process.on("uncaughtException", async (err) => {
 
 process.on("SIGTERM", () => {
 	console.log("Received SIGTERM");
-	Promise.all([
-		// twitch.exit(),
-		// dota.exit(),
-		mongo.exit(),
-	]).then(() => process.exit(0));
+	Promise.all([twitchBot.exit(), mongo.exit()]).then(() => process.exit(0));
 });

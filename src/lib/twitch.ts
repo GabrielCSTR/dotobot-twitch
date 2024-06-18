@@ -1,8 +1,11 @@
 import { Client } from "tmi.js";
 import TwitchAPI from "../utils/twitchApi";
 import Mongo from "./mongo";
+import { joinCommand, partCommand } from "../commands/joinPart";
 
-export class TwitchBot {
+export default class TwitchBot {
+	private static instance: TwitchBot;
+
 	private client: Client;
 
 	constructor() {
@@ -13,10 +16,13 @@ export class TwitchBot {
 				secure: true,
 			},
 			identity: {
-				username: "bot-name",
+				username: "dotobot_",
 				password: process.env.TWITCH_AUTH,
 			},
 		});
+
+		this.initialize();
+		this.setupMessageListener();
 	}
 
 	public async initialize(): Promise<void> {
@@ -30,8 +36,6 @@ export class TwitchBot {
 
 			this.client.getOptions().channels = channels;
 			this.client.connect();
-
-			this.setupMessageListener();
 		} catch (error) {
 			console.error("Error initializing TwitchBot:", error);
 		}
@@ -46,26 +50,6 @@ export class TwitchBot {
 			.toArray();
 	}
 
-	private async getStreamIds(options: {
-		path: string;
-		qs: any;
-	}): Promise<number[]> {
-		const { data: streams } = await TwitchAPI.api(options);
-		return (
-			streams?.map((stream: { user_id: string }) => Number(stream.user_id)) ||
-			[]
-		);
-	}
-
-	private getLiveStreamsToJoin(
-		channelsQuery: any[],
-		streamIds: number[]
-	): string[] {
-		return channelsQuery
-			.filter((channel) => streamIds.includes(channel.id))
-			.map((channel) => channel.name);
-	}
-
 	private getChannels(channelsQuery: any[]): string[] {
 		const channelsSet = new Set<string>();
 		channelsQuery.forEach((channel) => channelsSet.add(channel.name));
@@ -75,15 +59,63 @@ export class TwitchBot {
 	private setupMessageListener(): void {
 		this.client.on(
 			"message",
-			(channel: string, userstate: any, message: string, self: boolean) => {
-				if (self) return; // Ignore messages from the bot itself
-
+			async (
+				channel: string,
+				userstate: any,
+				message: string,
+				self: boolean
+			) => {
+				if (self) return;
+				const args = message.slice(1).split(" ");
+				const commandName = args.shift()?.toLowerCase();
 				console.log(
 					`Received message from ${userstate.username} in ${channel}: ${message}`
 				);
 
-				// Aqui você pode adicionar lógica adicional para lidar com as mensagens recebidas
+				if (message.startsWith("!join")) {
+					const joinChannel = await joinCommand(this, userstate);
+					this.sendMessage(channel, joinChannel);
+				}
+
+				if (message.startsWith("!part")) {
+					const partChannel = await partCommand(this, userstate);
+					this.sendMessage(channel, partChannel);
+				}
 			}
 		);
+	}
+
+	public static getInstance(): TwitchBot {
+		if (!TwitchBot.instance) {
+			TwitchBot.instance = new TwitchBot();
+		}
+		return TwitchBot.instance;
+	}
+
+	public join(channel: string) {
+		return this.client.join(channel);
+	}
+
+	public part(channel: string) {
+		return this.client.part(channel);
+	}
+
+	public sendMessage(channel: string, message: string) {
+		this.client.say(channel, message).catch((error) => {
+			console.error("Erro ao enviar mensagem:", error);
+		});
+	}
+
+	public exit(): Promise<boolean> {
+		return new Promise((resolve) => {
+			this.client
+				.disconnect()
+				.then(() => console.log("Manually disconnected from twitch"))
+				.then(() => {
+					this.client.removeAllListeners();
+					console.log("Removed all listeners from twitch");
+					resolve(true);
+				});
+		});
 	}
 }
