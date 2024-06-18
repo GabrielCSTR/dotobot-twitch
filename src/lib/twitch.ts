@@ -1,88 +1,36 @@
-import { Client } from "tmi.js";
+import { Client as TmiClient } from "tmi.js";
+import { PREFIX } from "@/constants";
 import TwitchAPI from "../utils/twitchApi";
+import * as commandFiles from "@/commands";
+import Command from "./command";
+import env from "@/env";
 import Mongo from "./mongo";
-import { joinCommand, partCommand } from "../commands/joinPart";
 
-export default class TwitchBot {
+export default class TwitchBot extends TmiClient {
 	private static instance: TwitchBot;
 
-	private client: Client;
+	commands: Record<string, Command["execute"]> = {};
 
 	constructor() {
-		this.client = new Client({
-			options: { debug: false, joinInterval: 300 },
+		super({
+			options: { debug: env.NODE_ENV === "development" },
 			connection: {
 				reconnect: true,
 				secure: true,
 			},
 			identity: {
-				username: "dotobot_",
-				password: process.env.TWITCH_AUTH,
+				username: env.BOT_NAME,
+				password: env.BOT_PASS,
 			},
+			channels: [env.CHANNEL_NAME],
 		});
-
-		this.initialize();
-		this.setupMessageListener();
 	}
 
 	public async initialize(): Promise<void> {
-		try {
-			const [channelsQuery] = await Promise.all([this.getChannelsQuery()]);
-
-			const channels = this.getChannels(channelsQuery);
-
-			channelsQuery.unshift("dotobot_");
-			console.log("CHANNELS CONNECTED", channels);
-
-			this.client.getOptions().channels = channels;
-			this.client.connect();
-		} catch (error) {
-			console.error("Error initializing TwitchBot:", error);
-		}
-	}
-
-	private async getChannelsQuery(): Promise<any[]> {
-		const db = await Mongo.getInstance().db;
-		return db
-			.collection("channels")
-			.find({ name: { $exists: true } })
-			.sort({ count: -1 })
-			.toArray();
-	}
-
-	private getChannels(channelsQuery: any[]): string[] {
-		const channelsSet = new Set<string>();
-		channelsQuery.forEach((channel) => channelsSet.add(channel.name));
-		return Array.from(channelsSet.values());
-	}
-
-	private setupMessageListener(): void {
-		this.client.on(
-			"message",
-			async (
-				channel: string,
-				userstate: any,
-				message: string,
-				self: boolean
-			) => {
-				if (self) return;
-				const args = message.slice(1).split(" ");
-				const commandName = args.shift()?.toLowerCase();
-				console.log(
-					`Received message from ${userstate.username} in ${channel}: ${message}`
-				);
-
-				if (message.startsWith("!join")) {
-					const joinChannel = await joinCommand(this, userstate);
-					this.sendMessage(channel, joinChannel);
-				}
-
-				if (message.startsWith("!part")) {
-					const partChannel = await partCommand(this, userstate);
-					this.sendMessage(channel, partChannel);
-				}
-			}
-		);
+		this.registerCommands();
+		this.handleCommands();
+		this.registerChannels();
+		this.connect();
 	}
 
 	public static getInstance(): TwitchBot {
@@ -92,27 +40,73 @@ export default class TwitchBot {
 		return TwitchBot.instance;
 	}
 
-	public join(channel: string) {
-		return this.client.join(channel);
+	private registerCommands() {
+		Object.values(commandFiles).forEach(({ commandName, execute }) => {
+			Object.assign(this.commands, {
+				...this.commands,
+				[commandName]: execute,
+			});
+		});
 	}
 
-	public part(channel: string) {
-		return this.client.part(channel);
+	private handleCommands() {
+		this.on("message", (channel, tags, message, self) => {
+			if (self || !message.startsWith(PREFIX)) return;
+			const args = message.slice(1).split(" ");
+			const commandName = args.shift()?.toLowerCase();
+
+			if (commandName && this.commands[commandName]) {
+				this.commands[commandName]({
+					client: this,
+					commandName,
+					args,
+					rawArgs: args.join(" "),
+					channel,
+					tags,
+					message,
+					self,
+				});
+			}
+		});
+	}
+
+	private async registerChannels() {
+		try {
+			const [channelsQuery] = await Promise.all([this.getChannelsQuery()]);
+			const channels = this.getChannelsConnected(channelsQuery);
+			channelsQuery.unshift("dotobot_");
+			this.getOptions().channels = channels;
+		} catch (error) {
+			console.error("Error initializing TwitchBot:", error);
+		}
+	}
+	private async getChannelsQuery(): Promise<any[]> {
+		const db = await Mongo.getInstance().db;
+		return db
+			.collection("channels")
+			.find({ name: { $exists: true } })
+			.sort({ count: -1 })
+			.toArray();
+	}
+
+	private getChannelsConnected(channelsQuery: any[]): string[] {
+		const channelsSet = new Set<string>();
+		channelsQuery.forEach((channel) => channelsSet.add(channel.name));
+		return Array.from(channelsSet.values());
 	}
 
 	public sendMessage(channel: string, message: string) {
-		this.client.say(channel, message).catch((error) => {
+		this.say(channel, message).catch((error) => {
 			console.error("Erro ao enviar mensagem:", error);
 		});
 	}
 
 	public exit(): Promise<boolean> {
 		return new Promise((resolve) => {
-			this.client
-				.disconnect()
+			this.disconnect()
 				.then(() => console.log("Manually disconnected from twitch"))
 				.then(() => {
-					this.client.removeAllListeners();
+					this.removeAllListeners();
 					console.log("Removed all listeners from twitch");
 					resolve(true);
 				});

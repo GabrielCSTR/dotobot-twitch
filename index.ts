@@ -1,12 +1,10 @@
-import dotenv from "dotenv";
-dotenv.config();
-
-import Mongo from "./lib/mongo";
-import { ErrorsQuery } from "./types";
-import TwitchBot from "./lib/twitch";
+import Mongo from "./src/lib/mongo";
+import { ErrorsQuery } from "./src/types";
+import TwitchBot from "./src/lib/twitch";
 
 const mongo = Mongo.getInstance();
 const twitchBot = TwitchBot.getInstance();
+twitchBot.initialize();
 
 process.on("uncaughtException", async (err) => {
 	const db = await mongo.db;

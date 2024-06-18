@@ -1,4 +1,6 @@
 import { Long } from "mongodb";
+import TwitchBot from "../lib/twitch";
+import { ChatUserstate } from "tmi.js";
 
 export interface ChannelsQuery {
 	id: number;
@@ -123,3 +125,15 @@ export interface RealTimeStatsQuery {
 	match: {};
 	teams: RealTimeStatsTeamsQuery[];
 }
+
+export type RunParams = {
+	client: TwitchBot;
+	commandName: string;
+	args: string[];
+	rawArgs: string;
+
+	channel: string;
+	tags: ChatUserstate;
+	message: string;
+	self: boolean;
+};

@@ -1,16 +1,17 @@
 {
 	"compilerOptions": {
-		"rootDir": "src",
-		"outDir": "build",
+		"outDir": "dist",
 		"removeComments": true,
 		"target": "ES2022",
-		"module": "CommonJS",
+		"module": "NodeNext",
+		"moduleResolution": "nodenext",
 		"strict": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
-		"resolveJsonModule": true
-	},
-	"include": ["src/**/*"],
-	"exclude": ["node_modules"]
+		"resolveJsonModule": true,
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	}
 }
