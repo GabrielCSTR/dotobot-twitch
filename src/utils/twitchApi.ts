@@ -19,7 +19,7 @@ export default class TwitchAPI {
 				`${baseUrl}${urlPath}`,
 				{
 					headers: {
-						Authorization: `Bearer ${process.env.TWITCH_AUTH}`,
+						Authorization: `Bearer ${process.env.BOT_PASS}`,
 						"Client-ID": process.env.TWITCH_CLIENT_ID,
 					},
 				},

@@ -137,3 +137,29 @@ export type RunParams = {
 	message: string;
 	self: boolean;
 };
+
+export type Hero = {
+	role?: string;
+	name?: string;
+	matches?: string;
+	winRate?: string;
+	winRate9500?: string;
+	contestRate?: string;
+	rating?: string;
+	radiantWinRate?: string;
+	direWinRate?: string;
+	expertWinRate?: string;
+	phase1WinRate?: string;
+	phase2WinRate?: string;
+	phase3WinRate?: string;
+	networth?: string;
+};
+
+export type MetaHeroes = {
+	All: Hero[];
+	Carry: Hero[];
+	Mid: Hero[];
+	Off: Hero[];
+	"Pos 4": Hero[];
+	"Pos 5": Hero[];
+};
