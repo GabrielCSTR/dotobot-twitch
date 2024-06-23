@@ -1,10 +1,10 @@
+import { Hero, MetaHeroes } from "@/types";
 import Command from "../lib/command";
 import Mongo from "../lib/mongo";
-import { MetaHeroes } from "../types";
-import metaHeroes from "../../heroes_data.json";
-import { categoryAliases } from "@/constants";
+import { categoryAliases, metaHeroesType } from "@/constants";
+import { D2PtScraper } from "d2pt.js";
 
-const metaHeroesTyped: MetaHeroes = metaHeroes;
+const d2pt = new D2PtScraper();
 
 function formatPercentage(value?: string): string {
 	if (!value) {
@@ -19,20 +19,19 @@ export default new Command(
 	async ({ rawArgs, client, channel, tags }) => {
 		const args = rawArgs.split(" ");
 
-		const command = args[0].toLocaleLowerCase();
-
-		const categories = Object.keys(metaHeroesTyped) as (keyof MetaHeroes)[];
+		const command: metaHeroesType =
+			args[0].toLocaleLowerCase() as metaHeroesType;
 
 		let response = "";
 
 		if (
-			categories.includes(command as keyof MetaHeroes) ||
 			Object.keys(categoryAliases).includes(command)
 		) {
-			const category = (categoryAliases[command] ||
-				command) as keyof MetaHeroes;
+			const category = (categoryAliases[command] || command) as metaHeroesType;
+			const heroesMeta = await d2pt.getHeroesMeta(category);
 			response = ``;
-			metaHeroesTyped[category].forEach((hero, index) => {
+      const metaHeroesTyped: Hero[] = heroesMeta;
+			metaHeroesTyped.forEach((hero, index) => {
 				response += `⭐ ${index + 1}-${hero.name} - M: ${
 					hero.matches
 				} - AVG: ${formatPercentage(hero?.winRate ?? "0.0")} | `;
