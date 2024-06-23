@@ -292,3 +292,5 @@ export enum HeroNames {
 	PrimalBeast = "Primal Beast",
 	Muerta = "Muerta",
 }
+
+export type HeroNamesType = keyof typeof HeroNames;
