@@ -1,6 +1,6 @@
-import Mongo from "./src/lib/mongo";
-import { ErrorsQuery } from "./src/types";
-import TwitchBot from "./src/lib/twitch";
+import Mongo from "./lib/mongo";
+import { ErrorsQuery } from "./types";
+import TwitchBot from "./lib/twitch";
 
 const mongo = Mongo.getInstance();
 const twitchBot = TwitchBot.getInstance();

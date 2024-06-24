@@ -1,9 +1,9 @@
 import { Client as TmiClient } from "tmi.js";
-import { PREFIX } from "@/constants";
+import { PREFIX } from "../constants";
 import TwitchAPI from "../utils/twitchApi";
-import * as commandFiles from "@/commands";
+import * as commandFiles from "../commands";
 import Command from "./command";
-import env from "@/env";
+import env from "../env";
 import Mongo from "./mongo";
 
 export default class TwitchBot extends TmiClient {

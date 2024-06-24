@@ -1,4 +1,4 @@
-import { MetaHeroes } from "@/types";
+import { MetaHeroes } from "../types";
 
 export const PREFIX = "!";
 

@@ -1,0 +1,16 @@
+version: "3.4"
+
+services:
+  dotobot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file: .env
+    environment:
+      NODE_ENV: development
+    ports:
+      - "9139:9139"
+    restart: unless-stopped

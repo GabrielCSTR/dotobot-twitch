@@ -4,9 +4,9 @@
 	"description": "Just another set of commands for twitch stream",
 	"main": "index.ts",
 	"scripts": {
-		"dev": "nodemon -r dotenv/config -r tsconfig-paths/register ./index.ts",
-		"start": "node ./dist",
-		"build": "tsup ./index.ts",
+		"dev": "nodemon -r dotenv/config -r tsconfig-paths/register ./src/index.ts",
+		"start": "node dist/index.js",
+		"build": "tsc",
 		"clear": "rm -rf build"
 	},
 	"keywords": [
@@ -19,7 +19,7 @@
 	"author": "GBRL DEV (https://twitch.tv/xstrdoto)",
 	"license": "ISC",
 	"dependencies": {
-		"d2pt.js": "^1.0.3",
+		"d2pt.js": "^1.0.5",
 		"mongodb": "^6.7.0",
 		"tmi.js": "^1.8.5",
 		"zod": "^3.23.8"

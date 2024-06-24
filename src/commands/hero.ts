@@ -1,16 +1,8 @@
-import { HeroNames } from "@/types";
+import { HeroNames } from "../types";
 import Command from "../lib/command";
 import { D2PtScraper } from "d2pt.js";
 
 const d2pt = new D2PtScraper();
-
-function formatPercentage(value?: string): string {
-	if (!value) {
-		return "0.00%";
-	}
-	const percentage = (parseFloat(value) * 100).toFixed(2);
-	return `${percentage}%`;
-}
 
 function isHeroName(name: string) {
 	return Object.values(HeroNames)

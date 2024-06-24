@@ -1,6 +1,6 @@
-import { Hero } from "@/types";
+import { Hero } from "../types";
 import Command from "../lib/command";
-import { categoryAliases, metaHeroesType } from "@/constants";
+import { categoryAliases, metaHeroesType } from "../constants";
 import { D2PtScraper } from "d2pt.js";
 
 const d2pt = new D2PtScraper();
