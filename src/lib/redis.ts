@@ -1,26 +1,26 @@
-import { createClient, RedisClientType } from 'redis';
+import { createClient, RedisClientType } from "redis";
 
 export default class Redis {
-  private static instance: Redis;
-  private client: RedisClientType;
+	private static instance: Redis;
+	private client: RedisClientType;
 
-  private constructor() {
-      this.client = createClient({
-          url: 'redis://localhost:6379'
-      });
-      
-      this.client.on('error', (err) => console.log('Redis Client Error', err));
-      this.client.connect();
-  }
+	private constructor() {
+		this.client = createClient({
+			url: "redis://redis:6379",
+		});
 
-  public static getInstance(): Redis {
-      if (!Redis.instance) {
-        Redis.instance = new Redis();
-      }
-      return Redis.instance;
-  }
+		this.client.on("error", (err) => console.log("Redis Client Error", err));
+		this.client.connect();
+	}
 
-  public getClient(): RedisClientType {
-      return this.client;
-  }
+	public static getInstance(): Redis {
+		if (!Redis.instance) {
+			Redis.instance = new Redis();
+		}
+		return Redis.instance;
+	}
+
+	public getClient(): RedisClientType {
+		return this.client;
+	}
 }
