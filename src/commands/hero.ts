@@ -1,8 +1,10 @@
 import { HeroNames } from "../types";
 import Command from "../lib/command";
 import { D2PtScraper } from "d2pt.js";
+import RedisManager from "../utils/redis-manager";
 
 const d2pt = new D2PtScraper();
+const redisManager = new RedisManager();
 
 function isHeroName(name: string) {
 	return Object.values(HeroNames)
@@ -16,15 +18,25 @@ export default new Command(
 		const args = rawArgs.split(" ");
 		const heroName: HeroNames = args[0].toLocaleLowerCase() as HeroNames;
 		let response = "";
+		let heroinfo = null;
+
 		if (isHeroName(heroName)) {
-			const heroInfoData = await d2pt.getHeroInfo(heroName);
-			const heroinfo = heroInfoData
-				?.filter((hero) => hero.role?.includes("Most Played"))
-				.map((hero) => ({
-					role: hero.role,
-					matches: hero.matches,
-					winRate: hero.winRate,
-				}))[0];
+			const getHeroInfoCache = await redisManager.get(heroName);
+
+			if (!getHeroInfoCache) {
+				const heroInfoData = await d2pt.getHeroInfo(heroName);
+				heroinfo = heroInfoData
+					?.filter((hero) => hero.role?.includes("Most Played"))
+					.map((hero) => ({
+						role: hero.role,
+						matches: hero.matches,
+						winRate: hero.winRate,
+					}))[0];
+				await redisManager.set(heroName, JSON.stringify(heroinfo));
+			} else {
+				heroinfo = JSON.parse(getHeroInfoCache);
+			}
+
 			response = ``;
 			response += `⭐ ${heroName.toUpperCase()} - ${
 				heroinfo?.role

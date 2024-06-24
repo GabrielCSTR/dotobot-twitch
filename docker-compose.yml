@@ -7,10 +7,29 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/usr/src/app
-      - /usr/src/app/node_modules
     env_file: .env
     environment:
       NODE_ENV: development
     ports:
       - "9139:9139"
     restart: unless-stopped
+    depends_on:
+      - redis
+    networks:
+      - redis_network
+
+  redis:
+    image: "redis:alpine"
+    container_name: redis_server
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - redis_network
+
+volumes:
+  redis_data:
+
+networks:
+  redis_network:

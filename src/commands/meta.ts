@@ -2,8 +2,10 @@ import { Hero } from "../types";
 import Command from "../lib/command";
 import { categoryAliases, metaHeroesType } from "../constants";
 import { D2PtScraper } from "d2pt.js";
+import RedisManager from "../utils/redis-manager";
 
 const d2pt = new D2PtScraper();
+const redisManager = new RedisManager();
 
 function formatPercentage(value?: string): string {
 	if (!value) {
@@ -23,13 +25,19 @@ export default new Command(
 
 		let response = "";
 
-		if (
-			Object.keys(categoryAliases).includes(command)
-		) {
+		if (Object.keys(categoryAliases).includes(command)) {
 			const category = (categoryAliases[command] || command) as metaHeroesType;
-			const heroesMeta = await d2pt.getHeroesMeta(category);
+			const getHeroesMetaCache = await redisManager.get(category);
+			let heroesMeta: Hero[] = [];
+			if (!getHeroesMetaCache) {
+				heroesMeta = await d2pt.getHeroesMeta(category);
+				await redisManager.set(category, JSON.stringify(heroesMeta));
+			} else {
+				heroesMeta = JSON.parse(getHeroesMetaCache) as Hero[];
+			}
+
 			response = ``;
-      const metaHeroesTyped: Hero[] = heroesMeta;
+			const metaHeroesTyped: Hero[] = heroesMeta;
 			metaHeroesTyped.forEach((hero, index) => {
 				response += `⭐ ${index + 1}-${hero.name} - M: ${
 					hero.matches
