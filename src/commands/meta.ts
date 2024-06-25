@@ -31,10 +31,12 @@ export default new Command(
 			let heroesMeta: Hero[] = [];
 			if (!getHeroesMetaCache) {
 				heroesMeta = await d2pt.getHeroesMeta(category);
-        if (!heroesMeta) {
+				if (!heroesMeta) {
 					client.say(
 						channel,
-						`@${tags.username}, No data found for ${category.toUpperCase()}`
+						`@${
+							tags.username
+						}, No data found for ${category.toUpperCase()}, please try again later`
 					);
 					return;
 				}

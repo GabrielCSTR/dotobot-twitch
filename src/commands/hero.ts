@@ -35,7 +35,9 @@ export default new Command(
 				if (!heroinfo) {
 					client.say(
 						channel,
-						`@${tags.username}, No data found for ${heroName.toUpperCase()}`
+						`@${
+							tags.username
+						}, No data found for ${heroName.toUpperCase()}, please try again later`
 					);
 					return;
 				}

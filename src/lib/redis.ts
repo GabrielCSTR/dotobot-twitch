@@ -6,7 +6,7 @@ export default class Redis {
 
 	private constructor() {
 		this.client = createClient({
-			url: "redis://redis:6379",
+			url: process.env.NODE_ENV !== "production" ? "redis://localhost:6379" : "redis://redis:6379",
 		});
 
 		this.client.on("error", (err) => console.log("Redis Client Error", err));
