@@ -2,7 +2,7 @@ import { HeroNames } from "../types";
 import Command from "../lib/command";
 import { D2PtScraper } from "d2pt.js";
 import RedisManager from "../utils/redis-manager";
-import { heroesAliasses } from "@/constants";
+import { heroesAliasses } from "../constants";
 
 const d2pt = new D2PtScraper();
 const redisManager = new RedisManager();
