@@ -13,6 +13,11 @@ services:
     ports:
       - "9139:9139"
     restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    privileged: true
     depends_on:
       - redis
     networks:
