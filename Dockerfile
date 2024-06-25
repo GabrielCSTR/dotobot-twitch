@@ -1,67 +1,66 @@
-# Estágio de build
-FROM node:18-alpine AS builder
+# BUILD
+FROM node:18-slim AS builder
 
 WORKDIR /usr/src/app
 
-# Instale o Chrome no estágio de build
-RUN apk add --no-cache \
-      chromium \
-      nss \
-      freetype \
-      harfbuzz \
-      ca-certificates \
-      ttf-freefont \
-      nodejs \
-      npm
+RUN apt-get update \
+    && apt-get install -y wget gnupg \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
+      --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 
-# Defina a variável de ambiente para o caminho do Chrome
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV SERVICE_PATH=/usr/bin/google-chrome
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV PUPPETEER_NO_SANDBOX=true
-
-# Copia package.json e package-lock.json
 COPY package*.json ./
-
-RUN npm install
 
 RUN npm install puppeteer@13.5.0
 
-# Copia o restante do código
-COPY . .
+RUN npm install \
+    && groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
+    && mkdir -p /home/pptruser/Downloads \
+    && chown -R pptruser:pptruser /home/pptruser \
+    && chown -R pptruser:pptruser /usr/src/app/node_modules
 
-# Compila o projeto TypeScript
-RUN npm run build
-
-# Estágio de produção
-FROM node:18-alpine as production
-
-# Instale o Chrome no estágio de build
-# Instale o Chrome no estágio de build
-RUN apk add --no-cache \
-      chromium \
-      nss \
-      freetype \
-      harfbuzz \
-      ca-certificates \
-      ttf-freefont \
-      nodejs \
-      npm
-
-# Defina a variável de ambiente para o caminho do Chrome
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV SERVICE_PATH=/usr/bin/google-chrome
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 ENV PUPPETEER_NO_SANDBOX=true
+
+COPY . .
+
+RUN npm run build
+
+# PRODUCTION
+FROM node:18-slim AS production
 
 WORKDIR /usr/src/app
 
-# Copia os artefatos do build da etapa anterior
+RUN apt-get update \
+    && apt-get install -y wget gnupg \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN npm install puppeteer@13.5.0
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV SERVICE_PATH=/usr/bin/google-chrome
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+ENV PUPPETEER_NO_SANDBOX=true
+
+RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
+    && mkdir -p /home/pptruser/Downloads
+
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 
-# Expor a porta que a aplicação irá rodar
+RUN chown -R pptruser:pptruser /usr/src/app
+
+USER pptruser
+
 EXPOSE 9139
 
-# Comando para rodar a aplicação
-CMD ["node", "dist/index.js", "google-chrome-stable"]
+CMD ["node", "dist/index.js"]

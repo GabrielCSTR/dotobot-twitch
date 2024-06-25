@@ -19,7 +19,7 @@
 	"author": "GBRL DEV (https://twitch.tv/xstrdoto)",
 	"license": "ISC",
 	"dependencies": {
-		"d2pt.js": "^1.0.4",
+		"d2pt.js": "^1.0.7",
 		"mongodb": "^6.7.0",
 		"redis": "^4.6.14",
 		"tmi.js": "^1.8.5",
