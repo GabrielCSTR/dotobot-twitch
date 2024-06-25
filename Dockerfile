@@ -52,7 +52,9 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 ENV PUPPETEER_NO_SANDBOX=true
 
 RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
-    && mkdir -p /home/pptruser/Downloads
+    && mkdir -p /home/pptruser/Downloads \
+    && mkdir -p /home/pptruser/.local/share/applications \
+    && chown -R pptruser:pptruser /home/pptruser
 
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules ./node_modules
