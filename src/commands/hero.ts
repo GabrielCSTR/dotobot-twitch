@@ -32,6 +32,13 @@ export default new Command(
 						matches: hero.matches,
 						winRate: hero.winRate,
 					}))[0];
+				if (!heroinfo) {
+					client.say(
+						channel,
+						`@${tags.username}, No data found for ${heroName.toUpperCase()}`
+					);
+					return;
+				}
 				await redisManager.set(heroName, JSON.stringify(heroinfo));
 			} else {
 				heroinfo = JSON.parse(getHeroInfoCache);

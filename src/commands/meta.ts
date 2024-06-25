@@ -31,6 +31,13 @@ export default new Command(
 			let heroesMeta: Hero[] = [];
 			if (!getHeroesMetaCache) {
 				heroesMeta = await d2pt.getHeroesMeta(category);
+        if (!heroesMeta) {
+					client.say(
+						channel,
+						`@${tags.username}, No data found for ${category.toUpperCase()}`
+					);
+					return;
+				}
 				await redisManager.set(category, JSON.stringify(heroesMeta));
 			} else {
 				heroesMeta = JSON.parse(getHeroesMetaCache) as Hero[];
