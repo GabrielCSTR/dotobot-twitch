@@ -1,4 +1,5 @@
 import { createClient, RedisClientType } from "redis";
+import env from "../env";
 
 export default class Redis {
 	private static instance: Redis;
@@ -6,7 +7,7 @@ export default class Redis {
 
 	private constructor() {
 		const url =
-			process.env.NODE_ENV !== "production"
+			env.NODE_ENV !== "production"
 				? "redis://localhost:6379"
 				: "redis://redis:6379";
 		this.client = createClient({
