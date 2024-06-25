@@ -5,8 +5,12 @@ export default class Redis {
 	private client: RedisClientType;
 
 	private constructor() {
+		const url =
+			process.env.NODE_ENV !== "production"
+				? "redis://localhost:6379"
+				: "redis://redis:6379";
 		this.client = createClient({
-			url: process.env.NODE_ENV !== "production" ? "redis://localhost:6379" : "redis://redis:6379",
+			url,
 		});
 
 		this.client.on("error", (err) => console.log("Redis Client Error", err));
