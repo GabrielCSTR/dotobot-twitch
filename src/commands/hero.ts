@@ -2,14 +2,19 @@ import { HeroNames } from "../types";
 import Command from "../lib/command";
 import { D2PtScraper } from "d2pt.js";
 import RedisManager from "../utils/redis-manager";
+import { heroesAliasses } from "@/constants";
 
 const d2pt = new D2PtScraper();
 const redisManager = new RedisManager();
 
-function isHeroName(name: string) {
-	return Object.values(HeroNames)
-		.map((hero) => hero.toLowerCase())
-		.includes(name as HeroNames);
+function isHeroName(name: string): string | null {
+	const normalizedName = name.toLowerCase();
+	for (const [hero, aliases] of Object.entries(heroesAliasses)) {
+		if (aliases.includes(normalizedName)) {
+			return hero ?? null;
+		}
+	}
+	return null;
 }
 
 export default new Command(
@@ -19,12 +24,18 @@ export default new Command(
 		const heroName: HeroNames = args[0].toLocaleLowerCase() as HeroNames;
 		let response = "";
 		let heroinfo = null;
+		const heroMatch = isHeroName(heroName);
 
-		if (isHeroName(heroName)) {
-			const getHeroInfoCache = await redisManager.get(heroName);
-
+		if (heroMatch) {
+			const heroSelected = Object.keys(HeroNames).find(
+				(hero) => hero.toLowerCase() === heroMatch.toLocaleLowerCase()
+			);
+			const heroValue = heroSelected
+				? HeroNames[heroSelected as keyof typeof HeroNames]
+				: null;
+			const getHeroInfoCache = await redisManager.get(heroSelected ?? "");
 			if (!getHeroInfoCache) {
-				const heroInfoData = await d2pt.getHeroInfo(heroName);
+				const heroInfoData = await d2pt.getHeroInfo(heroValue as HeroNames);
 				heroinfo = heroInfoData
 					?.filter((hero) => hero.role?.includes("Most Played"))
 					.map((hero) => ({
@@ -41,7 +52,7 @@ export default new Command(
 					);
 					return;
 				}
-				await redisManager.set(heroName, JSON.stringify(heroinfo));
+				await redisManager.set(heroSelected ?? "", JSON.stringify(heroinfo));
 			} else {
 				heroinfo = JSON.parse(getHeroInfoCache);
 			}
