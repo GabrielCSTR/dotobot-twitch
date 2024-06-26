@@ -5,7 +5,7 @@ export default class Redis {
 	private client: RedisClientType;
 
 	private constructor() {
-		const redisUrl = process.env.NODE_MOD === "production" ? `redis://default:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}` : `redis://localhost:${process.env.REDIS_PORT}`;
+		const redisUrl = process.env.NODE_ENV === "production" ? `redis://default:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}` : `redis://localhost:${process.env.REDIS_PORT}`;
 		this.client = createClient({
 			url: redisUrl,
 		});
