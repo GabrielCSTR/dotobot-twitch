@@ -15,6 +15,15 @@ function formatPercentage(value?: string): string {
 	return `${percentage}%`;
 }
 
+function isRole(role: string): string | null {
+	for (const [key, aliases] of Object.entries(categoryAliases)) {
+		if (aliases.includes(role)) {
+			return key ?? null;
+		}
+	}
+	return null;
+}
+
 export default new Command(
 	"meta",
 	async ({ rawArgs, client, channel, tags }) => {
@@ -24,8 +33,8 @@ export default new Command(
 			args[0].toLocaleLowerCase() as metaHeroesType;
 
 		let response = "";
-
-		if (Object.keys(categoryAliases).includes(command)) {
+    
+		if (isRole(command)) {
 			const category = (categoryAliases[command] || command) as metaHeroesType;
 			const getHeroesMetaCache = await redisManager.get(category);
 			let heroesMeta: Hero[] = [];
@@ -53,7 +62,7 @@ export default new Command(
 				} - AVG: ${formatPercentage(hero?.winRate ?? "0.0")} | `;
 			});
 		} else {
-			response = "Category not found!";
+			response = "Category not found!  ";
 		}
 
 		client.say(channel, `@${tags.username}, ${response.slice(0, -2)}`);
