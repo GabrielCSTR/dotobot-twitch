@@ -7,9 +7,9 @@ export const categoryAliases: { [key: string]: keyof MetaHeroesAliases } = {
 	mid: "mid",
 	off: "off",
 	sup4: "sup4",
-	sup5: "pos4",
-	pos4: "sup4",
-	pos5: "pos4",
+	sup5: "sup5",
+	pos4: "pos4",
+	pos5: "pos5",
 };
 
 export type MetaHeroesAliases = {

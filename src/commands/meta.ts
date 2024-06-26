@@ -33,7 +33,6 @@ export default new Command(
 			args[0].toLocaleLowerCase() as metaHeroesType;
 
 		let response = "";
-    
 		if (isRole(command)) {
 			const category = (categoryAliases[command] || command) as metaHeroesType;
 			const getHeroesMetaCache = await redisManager.get(category);
