@@ -19,15 +19,17 @@ services:
       - seccomp:unconfined
     privileged: true
     depends_on:
-      - redis
+      - dotobot-redis
     networks:
       - redis_network
 
-  redis:
+  dotobot-redis:
     image: "redis:alpine"
-    container_name: redis_server
+    container_name: dotobot-redis
+    restart: always
     ports:
       - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     networks:
