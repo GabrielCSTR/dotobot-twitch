@@ -1,6 +1,7 @@
 import Mongo from "./lib/mongo";
 import { ErrorsQuery } from "./types";
 import TwitchBot from "./lib/twitch";
+import updateHeroesMetaWithDelay from "./utils/updateMeta";
 
 const mongo = Mongo.getInstance();
 const twitchBot = TwitchBot.getInstance();
@@ -23,3 +24,8 @@ process.on("SIGTERM", () => {
 	console.log("Received SIGTERM");
 	Promise.all([twitchBot.exit(), mongo.exit()]).then(() => process.exit(0));
 });
+
+// Update Hero meta every 12 hours
+const interval = 12 * 60 * 60 * 1000;
+setInterval(updateHeroesMetaWithDelay, interval);
+updateHeroesMetaWithDelay(0);
