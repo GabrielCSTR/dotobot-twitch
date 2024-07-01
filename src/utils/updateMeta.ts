@@ -16,13 +16,13 @@ const updateHeroesMetaWithDelay = async (index: number) => {
 				const heroesMeta = await d2pt.getHeroesMeta(ROLE);
 				console.log(`Fetched data for ${ROLES[index]}`);
 				console.log(heroesMeta);
-				await redisClient.set(ROLES[index], JSON.stringify(heroesMeta));
+				await redisClient.set(ROLES[index].toLocaleLowerCase(), JSON.stringify(heroesMeta));
 			}
 		} catch (error) {
 			console.error(`Error fetching heroes meta for ${ROLES[index]}:`, error);
 		}
 
-		setTimeout(() => updateHeroesMetaWithDelay(index + 1), 1 * 60 * 1000); // 2 minutos em milissegundos
+		setTimeout(() => updateHeroesMetaWithDelay(index + 1), 2 * 60 * 1000); // 2 minutos em milissegundos
 	}
 };
 
