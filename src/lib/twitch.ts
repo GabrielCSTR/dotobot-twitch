@@ -74,6 +74,7 @@ export default class TwitchBot extends TmiClient {
 		try {
 			const [channelsQuery] = await Promise.all([this.getChannelsQuery()]);
 			const channels = this.getChannelsConnected(channelsQuery);
+			console.log("CHANNELS", channels);
 			channelsQuery.unshift("dotobot_");
 			this.getOptions().channels = channels;
 		} catch (error) {
