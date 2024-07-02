@@ -27,5 +27,7 @@ process.on("SIGTERM", () => {
 
 // Update Hero meta every 12 hours
 const interval = 12 * 60 * 60 * 1000;
+const delay = 5 * 60 * 1000; // Start delay (exemplo: 5 minutos)
+
 setInterval(updateHeroesMetaWithDelay, interval);
-updateHeroesMetaWithDelay(0);
+setTimeout(updateHeroesMetaWithDelay, delay);
