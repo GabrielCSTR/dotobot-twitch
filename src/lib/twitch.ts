@@ -29,7 +29,7 @@ export default class TwitchBot extends TmiClient {
 	public async initialize(): Promise<void> {
 		this.registerCommands();
 		this.handleCommands();
-		this.registerChannels();
+		await this.registerChannels();
 		this.connect();
 	}
 
