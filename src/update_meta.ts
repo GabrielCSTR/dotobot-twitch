@@ -6,7 +6,7 @@ import { createClient } from "redis";
 
 import cron from "node-cron";
 
-cron.schedule(`*/1 * * * *`, async () => {
+cron.schedule(`0 0 * * *`, async () => {
   console.log("running cron job update meta heroes...");
 
   dotenv.config();
