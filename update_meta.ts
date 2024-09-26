@@ -10,34 +10,35 @@ const ROLES = ["HC", "MID", "TOP", "SUP4", "SUP5"];
 const d2pt = new D2PtScraper();
 
 const redisData = {
-	host: "127.0.0.1",
-	port: process.env.REDIS_PORT,
-	password: process.env.REDIS_PASSWORD,
+  host: "127.0.0.1",
+  port: process.env.REDIS_PORT,
+  password: process.env.REDIS_PASSWORD,
 };
 const redisUrl = `redis://default:${redisData.password}@${redisData.host}:${redisData.port}`;
 const redisClient = createClient({
-	url: redisUrl,
+  url: redisUrl,
 });
 redisClient.on("error", (err) => console.log("Redis Client Error", err));
 redisClient.connect();
 
-async function getHeroesMetaWithDelay(index: number) {
-	if (index < ROLES.length) {
-		try {
-			const ROLE = ROLES[index].toLocaleLowerCase() as metaHeroesType;
-			const getHeroesMetaCache = await redisClient.get(ROLE);
-			if (!getHeroesMetaCache) {
-				const heroesMeta = await d2pt.getHeroesMeta(ROLE);
-				console.log(`Fetched data for ${ROLES[index]}`);
-				console.log(heroesMeta);
-				await redisClient.set(ROLES[index], JSON.stringify(heroesMeta));
-			}
-		} catch (error) {
-			console.error(`Error fetching heroes meta for ${ROLES[index]}:`, error);
-		}
+async function getHeroesMetaWithDelay() {
+  for (let index = 0; index < ROLES.length; index++) {
+    try {
+      const ROLE = ROLES[index].toLocaleLowerCase() as metaHeroesType;
+      const getHeroesMetaCache = await redisClient.get(ROLE);
+      if (!getHeroesMetaCache) {
+        const heroesMeta = await d2pt.getHeroesMeta(ROLE);
+        console.log(`Fetched data for ${ROLES[index]}`);
+        console.log(heroesMeta);
+        await redisClient.set(ROLES[index], JSON.stringify(heroesMeta));
+      }
+    } catch (error) {
+      console.error(`Error fetching heroes meta for ${ROLES[index]}:`, error);
+    }
 
-		setTimeout(() => getHeroesMetaWithDelay(index + 1), 2 * 60 * 1000); // 2 minutos em milissegundos
-	}
+    // Delay of 2 minutes between each role processing
+    await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000));
+  }
 }
 
-getHeroesMetaWithDelay(0);
+getHeroesMetaWithDelay();
